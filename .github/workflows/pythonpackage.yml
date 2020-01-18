@@ -26,7 +26,9 @@ jobs:
         git clone https://github.com/optuna/optuna
     - name: Build docs
       run: |
-        cd optuna/docs
+        cd optuna
+        pip install -e .
+        cd docs
         make html
         zip docs -r build
         cd ../../
