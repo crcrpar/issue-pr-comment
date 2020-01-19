@@ -38,7 +38,6 @@ jobs:
         name: docs
         path: optuna/docs/docs.zip
     - name: Add comment to PR
-      if: steps.comvent.outputs.comvent != ''
       env:
         URL: ${{ github.event.issue.comments_url }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
