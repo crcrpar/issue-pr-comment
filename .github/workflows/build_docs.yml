@@ -1,0 +1,50 @@
+name: Build sphinx docs
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 2
+      matrix:
+        python-version: [3.7]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install --no-cache-dir lightgbm sphinx sphinx_rtd_theme
+    - name: Clone Optuna
+      run: |
+        git clone https://github.com/optuna/optuna
+    - name: Build docs
+      run: |
+        cd optuna
+        pip install -e .
+        cd docs
+        make html
+        zip docs -r build
+        cd ../../
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: docs
+        path: optuna/docs/docs.zip
+    - name: Add comment to PR
+      env:
+        URL: ${{ github.event.issue.comments_url }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        curl \
+          -X POST \
+          $URL \
+          -H "Content-Type: application/json" \
+          -H "Authorization: token $GITHUB_TOKEN" \
+          --data '{ "body": "blah blah" }'
