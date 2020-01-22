@@ -1,0 +1,28 @@
+name: Docker Image CI
+
+on: [push]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python_version: ['3.5', '3.6', '3.7', '3.8']
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the Docker image
+      run: |
+        docker build . --build-arg PYTHON_VERSION=${{ matrix.python_version }} --file Dockerfile --tag docker.pkg.github.com/${{ github.repository }}/optuna-sample:stable-${{ matrix.python_version }}
+
+    - name: Login & Publish to GitHub Packages
+      # if: github.event_name != 'pull_request'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+      run: |
+        echo "${GITHUB_TOKEN}" | docker login docker.pkg.github.com -u crcrpar --password-stdin
+        docker push docker.pkg.github.com/${{ github.repository }}/optuna-sample:latest-${{ matrix.python_version }}
