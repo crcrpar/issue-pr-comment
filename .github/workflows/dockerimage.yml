@@ -17,3 +17,12 @@ jobs:
     - name: Build the Docker image
       run: |
         docker build . --build-arg PYTHON_VERSION=${{ matrix.python_version }} --file Dockerfile --tag docker.pkg.github.com/${{ github.repository }}/optuna-sample:stable-${{ matrix.python_version }}
+
+    - name: Login to Registries
+      # if: github.event_name != 'pull_request'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+      run: |
+        echo "${GITHUB_TOKEN}" | docker login docker.pkg.github.com -u crcrpar --password-stdin
+        docker push docker.pkg.github.com/${{ github.repository }}/optuna-sample:stable-${{ matrix.python_version }}
